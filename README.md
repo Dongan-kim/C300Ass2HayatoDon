@@ -1,7 +1,7 @@
 # s-talk
 
-SFU CMPT 300 Fall 2020 Assignment 2, a UDP two-way text chat.
-Written by Trevor Bonas.
+SFU CMPT 300 Fall 2024 Assignment 2, a UDP two-way text chat.
+Written by Hayato and Don
 
 s-talk provides two-way local communication but only if the two
 users know the other's ip and listening socket information
