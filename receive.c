@@ -56,6 +56,7 @@ void* receiveTransmission(void* unused) {
 				}
 				pthread_mutex_unlock(&in_mutex);
 				break;
+
 			}
 		}
 	}

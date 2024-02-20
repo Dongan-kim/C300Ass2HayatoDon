@@ -14,12 +14,6 @@ struct Node_s {
     void* pItem;
     Node* pNext;
     Node* pPrev;
-    // macos fields, doesn't change anything for instructor provided
-    // list.o
-    Node* next;
-    Node* prev;
-    void* item;
-    int index;
 };
 
 enum ListOutOfBounds {
@@ -28,31 +22,22 @@ enum ListOutOfBounds {
 };
 
 typedef struct List_s List;
-struct List_s {
+struct List_s{
     Node* pFirstNode;
     Node* pLastNode;
     Node* pCurrentNode;
     int count;
     List* pNextFreeHead;
     enum ListOutOfBounds lastOutOfBoundsReason;
-
-    // Fields to support tlist.c, for macos
-    Node* head;
-    Node* tail;
-    Node* current;
-    bool after;
-    bool before;
-    int number;
-    int index;
 };
 
 // Maximum number of unique lists the system can support
 // (You may modify for your needs)
-#define LIST_MAX_NUM_HEADS 10
+#define LIST_MAX_NUM_HEADS 100
 
 // Maximum total number of nodes (statically allocated) to be shared across all lists
 // (You may modify for your needs)
-#define LIST_MAX_NUM_NODES 100
+#define LIST_MAX_NUM_NODES 1000
 
 // General Error Handling:
 // Client code is assumed never to call these functions with a NULL List pointer, or 
@@ -91,13 +76,13 @@ void* List_curr(List* pList);
 // If the current pointer is before the start of the pList, the item is added at the start. If 
 // the current pointer is beyond the end of the pList, the item is added at the end. 
 // Returns 0 on success, -1 on failure.
-int List_add(List* pList, void* pItem);
+int List_insert_after(List* pList, void* pItem);
 
 // Adds item to pList directly before the current item, and makes the new item the current one. 
 // If the current pointer is before the start of the pList, the item is added at the start. 
 // If the current pointer is beyond the end of the pList, the item is added at the end. 
 // Returns 0 on success, -1 on failure.
-int List_insert(List* pList, void* pItem);
+int List_insert_before(List* pList, void* pItem);
 
 // Adds item to the end of pList, and makes the new item the current one. 
 // Returns 0 on success, -1 on failure.
