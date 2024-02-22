@@ -6,7 +6,7 @@ Dongan Kim, Hayato Koyama(301423217)
 
 ## The possible errors we have in the program:
 
-- When you try to use this program with a public wifi or in any public facilities(e.g. Cafe, Library etc), the UDP traffic might be blocked by the firewall or network traffic configuration managed by the wifi owner, and you might not be able to send/receive any message using ID address. (The program we wrote works fine in CSIL on SFU).
+#### When you try to use this program with a public wifi or in any public facilities(e.g. Cafe, Library etc), the UDP traffic might be blocked by the firewall or network traffic configuration managed by the wifi owner, and you might not be able to send/receive any message using ID address. (The program we wrote works fine in CSIL on SFU).
 
 #### If you are using your personal computer and have some firewall configurations, you may need to allow UDP traffic to pass in order to use this s-talk program. For troubleshooting regarding Firewall configuration, please try tips below or refer to the URLs below:
 
