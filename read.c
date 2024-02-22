@@ -6,34 +6,33 @@
 #include "receive.h"
 #include "read.h"
 
-List* in_list;
+List* list_for_in;
+static pthread_t read_thread;
 
-static pthread_t readThread;
-
-void* readToScreen(void* unused){
+void* Reader(void* unused){
 	while(1){
-		Receive_signalNewMsg(); // Waits for a message to be received
-		const char* intro = "[Friend]: ";
-		char* message = List_first(in_list); // Takes message from front of queue
+		Receiver_signal();
+		const char* intro = "[Message]: ";
+		char* msg = List_first(list_for_in);
 		fputs(intro, stdout);
-		fputs(message, stdout);
+		fputs(msg, stdout);
 		fflush(stdout);
-		if (*(message) == '!' && *(message + 2) == '\0') { // If receives a single '!' exits gracefully
-			Manager_shutdown(); // receive.c will take care of freeing the message
-		}
-		else {
-			free(message);
-			Manager_remove(in_list);
+		if (*(msg) == 'S' && *(msg + 2) == '\0') {
+			// If user type 'S' it will be shutdown
+			Manager_shutdown();
+		}else {
+			free(msg);
+			Manager_remove(list_for_in);
 		}
 	}
 }
 
-void Read_init(List* list){
-	in_list = list;
-	pthread_create(&readThread, NULL, readToScreen, NULL);
+void Reader_init(List* list){
+	list_for_in = list;
+	pthread_create(&read_thread, NULL, Reader, NULL);
 }
 
-void Read_shutdown(void) {
-	pthread_cancel(readThread);
-	pthread_join(readThread, NULL);
+void Reader_shutdown(void) {
+	pthread_cancel(read_thread);
+	pthread_join(read_thread, NULL);
 }

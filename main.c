@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 
 	// Pass the in list to both threads that will be using it
 	Receiver_init(in);
-	Read_init(in);
+	Reader_init(in);
 
 	// Pass the out list to both threads that will be using it
 	Writer_init(out);

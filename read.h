@@ -8,8 +8,8 @@
 #include "receive.h"
 #include "read.h"
 
-void* readToScreen(void* unused);
-void Read_init(List* list);
-void Read_shutdown(void);
+void* Reader(void* unused);
+void Reader_init(List* list);
+void Reader_shutdown(void);
 
 #endif

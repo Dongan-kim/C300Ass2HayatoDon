@@ -134,9 +134,9 @@ void Manager_exit(void) {
 
 	printf("Program exiting\n");
 	Sender_shutdown();
-	Read_shutdown();
+	Reader_shutdown();
 	Writer_shutdown();
-	Receive_shutdown();
+	Receiver_shutdown();
 	pthread_mutex_destroy(&main_mutex);
 	pthread_mutex_destroy(&list_mutex);
 	pthread_mutex_destroy(&port_mutex);
