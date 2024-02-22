@@ -12,78 +12,72 @@
 #include "write.h"
 #include "read.h"
 
-// Boss takes care of allocation and deletion of nodes
-// and binding a socket, as well as triggering complete shutdown
-// something that wouldn't entirely be possible or clean
-// if every thread had to manage in addition to what they
-// already do
+// Manager deals with nodes creation/deletion/management
+// so this is a manager class that can be used from anywhere in the program to deal with logistics such as initiating/closing the program.
 
-bool sockInit;
+bool socketFlag;
 int local_port;
 
-// Mutex for appending to list
-static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// Mutex for removing a node from a list
-static pthread_mutex_t remove_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-// Mutex for binding to a port
+// attaching to a port
 static pthread_mutex_t port_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-// Mutex and condition variable for node allocation and node availability signaling
+// appending to list
+static pthread_mutex_t list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// removing node from list
+static pthread_mutex_t remove_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// node availability business(creation,deletion, signalling)
 static pthread_mutex_t node_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t node_cond = PTHREAD_COND_INITIALIZER;
 
-// Mutex and condition variable for the main thread to wait on
+// main thread business
 static pthread_mutex_t main_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t main_cond = PTHREAD_COND_INITIALIZER;
 
 struct sockaddr_in sinNew; // Socket for localhost
-int socketDescriptor; // Socket descriptor returned to every thread that wants one
+int socket_container;	   // Socket container for threads to use
 
-
-// All functions can be called by any thread
-
-// Only main thread calls this, no need for anything fancy
-// Prevents local port number from having to be passed in from multiple threads
-void Manager_add_port(int x) {
+// Registering port
+void Manager_add_port(int x)
+{
 	local_port = x;
 }
 
-// Does the binding that allows the program to listen and send information with UDP
-// Ensures that a socket is bound only once
-int Manager_Getsocket() {
+// Managers binding sockets to send/receive message through UDP
+int Manager_Getsocket()
+{
 	pthread_mutex_lock(&port_mutex);
 	{
-		if (!sockInit) {
-			socketDescriptor = socket(PF_INET, SOCK_DGRAM, 0);
+		if (!socketFlag)
+		{
+			socket_container = socket(PF_INET, SOCK_DGRAM, 0);
 
 			memset(&sinNew, 0, sizeof(sinNew));
 			sinNew.sin_family = AF_INET;
 			sinNew.sin_addr.s_addr = htonl(INADDR_ANY);
 			sinNew.sin_port = htons(local_port);
 
-			if (bind(socketDescriptor, (struct sockaddr*) &sinNew, sizeof(sinNew)) < 0) {
-				printf("ERROR: Socket could not be bound\nExiting program\n");
+			if (bind(socket_container, (struct sockaddr *)&sinNew, sizeof(sinNew)) < 0)
+			{
+				printf("manager.c: Error detected: Binding socket failed.\n");
 				Manager_shutdown();
 			}
-			sockInit = 1;
+			socketFlag = 1;
 		}
 	}
 	pthread_mutex_unlock(&port_mutex);
-	return socketDescriptor;
+	return socket_container;
 }
 
-
-// All nodes for lists come from a shared pool; this creates a race condition
-// This function allows at most one thread to add a node to the list it is 
-// working with, even when multiple threads are trying to at the same time
-// There is no race condition with removing a node
-int Manager_append(List* list, void* item) {
+// The function monitors if no more than one thread is trying to access a pool of nodes
+int Manager_append(List *list, void *item)
+{
 	int return_value = 0;
 	pthread_mutex_lock(&list_mutex);
 	{
-		if (List_append(list, item) == -1) {
+		if (List_append(list, item) == -1)
+		{
 			return_value = -1;
 		}
 	}
@@ -92,21 +86,20 @@ int Manager_append(List* list, void* item) {
 	return return_value;
 }
 
-// There may be a race condition in removing nodes but the real
-// purpose of this function is signalling a waiting thread that a node
-// is available
-void Manager_remove(List* list) {
+// Deals with removing nodes. therefore another responsibility of this function is to signal free node
+void Manager_remove(List *list)
+{
 	pthread_mutex_lock(&remove_mutex);
 	{
 		List_remove(list);
-		pthread_cond_signal(&node_cond); // Signal a node is available
+		pthread_cond_signal(&node_cond);
 	}
 	pthread_mutex_unlock(&remove_mutex);
 }
 
-// Signals main to shutdown and cleanup everything
-// Can be called from any thread
-void Manager_shutdown(void) {
+// send signals to finish the program
+void Manager_shutdown(void)
+{
 	pthread_mutex_lock(&main_mutex);
 	{
 		pthread_cond_signal(&main_cond);
@@ -114,8 +107,9 @@ void Manager_shutdown(void) {
 	pthread_mutex_unlock(&main_mutex);
 }
 
-// Threads come here to wait for a signal that a new node is available
-void Manager_wait(void) {
+// Threads needs to wait until a free node is available
+void Manager_wait(void)
+{
 	pthread_mutex_lock(&node_mutex);
 	{
 		pthread_cond_wait(&node_cond, &node_mutex);
@@ -123,16 +117,16 @@ void Manager_wait(void) {
 	pthread_mutex_unlock(&node_mutex);
 }
 
-// Complete shutdown by calling each thread's own shutdown function
-// via main thread
-void Manager_exit(void) {
+// Deals with finishing/terminating the program
+void Manager_exit(void)
+{
 	pthread_mutex_lock(&main_mutex);
 	{
 		pthread_cond_wait(&main_cond, &main_mutex);
 	}
 	pthread_mutex_unlock(&main_mutex);
 
-	printf("Program exiting\n");
+	printf("S-talk progarm exiting\n");
 	Sender_shutdown();
 	Reader_shutdown();
 	Writer_shutdown();
