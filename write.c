@@ -6,79 +6,64 @@
 #include "write.h"
 #include "list.h"
 
-List* out_list;
+List* list_for_out;
+//Synchronization
+static pthread_cond_t condVar_out = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t mutex_out = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t write_thread;
 
-static pthread_t writeThread;
-
-static pthread_mutex_t out_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t out_cond = PTHREAD_COND_INITIALIZER;
-
-void* writeMessage(void* unused) {
+void* Writer(void* unused) {
 	while(1) {
 		char buffer[1024];
-		fgets(buffer, 1024, stdin); // Waits for user input into static buffer
-		int receiveLen = strlen(buffer);
+		fgets(buffer, 1024, stdin);
+		int receiveLength = strlen(buffer);
 
-		// This while loop is only really a while loop
-		// if no Nodes are ready for passing to sendThread
-		// In which case writeThread waits to be signaled that there
-		// is a free node then allocates again and tries to append message
-		// again
-		// This prevents memory leaks
-		while(1) {
-			char* message = (char*)malloc(receiveLen + 1);
-			strcpy(message, buffer); // Copy already written message from user into dynamic
-			if (Boss_appendList(out_list, message) == -1) {
-				printf("Written message could not be added to out list buffer\n");
-				printf("Attempting retry to send oldest written message\n");
-				free(message); // Frees in case shutdown called during wait
-				Boss_waitForNode(); // Waits in Boss to be told a node is free
+	while(1) {
+		char* msg = (char*)malloc(receiveLength + 1);
+		strcpy(msg, buffer);
+		if (Manager_append(list_for_out, msg) == -1) {
+			printf("Error: Message could't be added to the list\n");
+			free(msg); 
+			Manager_wait();
+		}else {
+			pthread_mutex_lock(&mutex_out);
+			{
+				pthread_cond_signal(&condVar_out);
 			}
-			else {
-				pthread_mutex_lock(&out_mutex);
-				{
-					pthread_cond_signal(&out_cond); // Tells sendThread there's a new message
-				}
-				pthread_mutex_unlock(&out_mutex);
-				break;
-			}
+			pthread_mutex_unlock(&mutex_out);
+			break;
 		}
-
+    }
 	}
-
 	return NULL;
 }
 
-void Write_init(List* list){
-	out_list = list;
-	pthread_t writeThread;
-	pthread_create(&writeThread, NULL, writeMessage, NULL);
+void Writer_init(List* list){
+	list_for_out = list;
+	pthread_t write_thread;
+	pthread_create(&write_thread, NULL, Writer, NULL);
 }
 
-// Function used by List_clear in case there are still messages
-// that need to be freed
-void Write_freeMessages(void* message) {
-	if (message) {
-		free(message);
-	}
-}
-
-// This is where sendThread will wait until it is signaled
-// there is a message to be sent
-// Written in write.c so mutexes and condition variables don't have
-// to be passed back and forth
-void Write_signalMsg(void) {
-	pthread_mutex_lock(&out_mutex); 
+//send_thread waits until it is signaled
+void Writer_signal(void) {
+	pthread_mutex_lock(&mutex_out); 
 	{
-		pthread_cond_wait(&out_cond, &out_mutex);
+		pthread_cond_wait(&condVar_out, &mutex_out);
 	}
-	pthread_mutex_unlock(&out_mutex);
+	pthread_mutex_unlock(&mutex_out);
 }
 
-void Write_shutdown(void){
-	List_free(out_list, &Write_freeMessages);
-	pthread_cancel(writeThread);
-	pthread_join(writeThread, NULL);
-	pthread_mutex_destroy(&out_mutex);
-	pthread_cond_destroy(&out_cond);
+// if there are still messages left
+void Writer_free(void* msg) {
+	if (msg) {
+		free(msg);
+	}
+}
+
+void Writer_shutdown(void){
+	List_free(list_for_out, &Writer_free);
+	pthread_cancel(write_thread);
+	pthread_join(write_thread, NULL);
+	pthread_mutex_destroy(&mutex_out);
+	pthread_cond_destroy(&condVar_out);
 }

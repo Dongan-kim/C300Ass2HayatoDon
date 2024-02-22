@@ -12,45 +12,42 @@
 #include "send.h"
 #include "write.h"
 
-// Network is big endian, for 0xa1cf 0xa1 is transmitted first (MSB first)
+static List* list_for_out;
+static pthread_t send_thread;
+struct addrinfo* sin_Remote_addr; // who you to send to
 
-static pthread_t sendThread;
-static List* out_list;
-struct addrinfo* sinRemote; // All address info for who to send to
-
-void* sendMessage(void* unused) {
+void* Sender(void* unused) {
 	while(1) {
-		Write_signalMsg(); // sendThread waits until it is told a message is ready to be sent
-		int socketDescriptor = Boss_getSocket();
-	
-		char* message = List_first(out_list); // Grab message from list
+		Writer_signal(); 								// wait for the signal
+		int socketDescriptor = Manager_Getsocket();
+		char* msg = List_first(list_for_out);
+		int msgLength = strlen(msg);
 
-		int len = strlen(message);
-		if (sendto(socketDescriptor, message,
-			len + 1, 0, sinRemote->ai_addr,
-			sinRemote->ai_addrlen) == -1) {
-			printf("ERROR: Message not successfully sent\n");
+		if (sendto(socketDescriptor, msg, msgLength + 1, 0, sin_Remote_addr->ai_addr, sin_Remote_addr->ai_addrlen) == -1) {
+			printf("Error: Message could't be sent\n");
 		}
-		// Has to check message + 2 since ENTER included '\n' and fgets
-		// puts EOF after that
-		if (*(message) == '!' && *(message + 2) == '\0') { // If user sendss a solo '!' gracefully exits
-			Boss_shutdown(); // Any malloc'd message in list will be freed by shutdown
-		}
-		else {
-			free(message);
-			Boss_removeNode(out_list);
+
+		if (*(msg) == 'S' && *(msg + 2) == '\0') { 
+			// If user type 'S' it will be shutdown
+			Manager_shutdown();
+		}else {
+			free(msg);
+			Manager_removeNode(list_for_out);
 		}
 	}
 }
 
-void Send_init(List* list, struct addrinfo** remoteAddress) {
-	out_list = list;
-	sinRemote = *remoteAddress;
-	pthread_create(&sendThread, NULL, sendMessage, NULL);
+void Sender_init(List* list, struct addrinfo** remote_addr) {
+	list_for_out = list;
+	sin_Remote_addr = *remote_addr;
+	pthread_create(&send_thread, 
+				   NULL,          //Attributes (its almost always NULL)
+				   Sender,        //Function
+				   NULL);         //Arguments
 }
 
-void Send_shutdown(void) {
-	pthread_cancel(sendThread);
-	pthread_join(sendThread, NULL);
-	free(sinRemote);
+void Sender_shutdown(void) {
+	pthread_cancel(send_thread);
+	pthread_join(send_thread, NULL);
+	free(sin_Remote_addr);
 }

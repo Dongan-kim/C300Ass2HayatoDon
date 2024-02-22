@@ -14,11 +14,11 @@
 #include "read.h"
 
 void Boss_addLocalPort(int x);
-int Boss_getSocket();
-int Boss_appendList(List* list, void* item);
-void Boss_waitForNode(void);
-void Boss_removeNode(List* list);
-void Boss_shutdown(void);
+int Manager_Getsocket();
+int Manager_append(List* list, void* item);
+void Manager_wait(void);
+void Manager_remove(List* list);
+void Manager_shutdown(void);
 void Boss_exitSignal(void);
 
 #endif

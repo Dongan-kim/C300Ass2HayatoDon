@@ -14,8 +14,8 @@
 #include "send.h"
 #include "write.h"
 
-void* sendMessage(void* unused);
-void Send_init(List* list, struct addrinfo** remoteAddress);
-void Send_shutdown(void);
+void* Sender(void* unused);
+void Sender_init(List* list, struct addrinfo** remote_addr);
+void Sender_shutdown(void);
 
 #endif

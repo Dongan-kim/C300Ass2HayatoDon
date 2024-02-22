@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	printf("Welcome to s-talk\nStart typing to chat\nType '!' to exit program\n\n");
+	printf("Welcome to s-talk\nStart typing to chat\nType 'S' to exit program\n\n");
 
 	local_port = atoi(argv[1]);
 
@@ -62,12 +62,12 @@ int main(int argc, char* argv[]) {
 	Boss_addLocalPort(local_port); // Just means passing local_port only once
 
 	// Pass the in list to both threads that will be using it
-	Receive_init(in);
+	Receiver_init(in);
 	Read_init(in);
 
 	// Pass the out list to both threads that will be using it
-	Write_init(out);
-	Send_init(out, &remoteAddress);
+	Writer_init(out);
+	Sender_init(out, &remoteAddress);
 
 	// Main thread will wait in Boss_exitSignal
 	// until shutdown is signaled by one of the threads

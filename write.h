@@ -8,10 +8,10 @@
 #include "write.h"
 #include "list.h"
 
-void* writeMessage(void* unused);
-void Write_init(List* list);
-void Write_freeMessages(void* message);
-void Write_signalMsg(void);
-void Write_shutdown(void);
+void* Writer(void* unused);
+void Writer_init(List* list);
+void Writer_signal(void);
+void Writer_free(void* msg);
+void Writer_shutdown(void);
 
 #endif

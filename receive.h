@@ -13,10 +13,10 @@
 #include "list.h"
 #include "receive.h"
 
-void* receiveTransmission(void* unused);
-void Receive_freeMessages(void* message);
-void Receive_signalNewMsg(void);
-void Receive_init(List* list);
-void Receive_shutdown(void);
+void* Receiver(void* unused);
+void Receiver_signal(void);
+void Receiver_free(void* msg);
+void Receiver_init(List* list);
+void Receiver_shutdown(void);
 
 #endif
