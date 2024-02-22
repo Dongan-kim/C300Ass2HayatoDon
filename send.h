@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "boss.h"
+#include "manager.h"
 #include "list.h"
 #include "send.h"
 #include "write.h"

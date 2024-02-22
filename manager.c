@@ -5,7 +5,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include "boss.h"
+#include "manager.h"
 #include "list.h"
 #include "receive.h"
 #include "send.h"
@@ -46,7 +46,7 @@ int socketDescriptor; // Socket descriptor returned to every thread that wants o
 
 // Only main thread calls this, no need for anything fancy
 // Prevents local port number from having to be passed in from multiple threads
-void Boss_addLocalPort(int x) {
+void Manager_add_port(int x) {
 	local_port = x;
 }
 
@@ -125,7 +125,7 @@ void Manager_wait(void) {
 
 // Complete shutdown by calling each thread's own shutdown function
 // via main thread
-void Boss_exitSignal(void) {
+void Manager_exit(void) {
 	pthread_mutex_lock(&main_mutex);
 	{
 		pthread_cond_wait(&main_cond, &main_mutex);

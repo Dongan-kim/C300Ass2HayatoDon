@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 #include <arpa/inet.h>
-#include "boss.h"
+#include "manager.h"
 #include "receive.h"
 #include "send.h"
 #include "write.h"
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 		return 3;
 	}
 
-	Boss_addLocalPort(local_port); // Just means passing local_port only once
+	Manager_add_port(local_port); // Just means passing local_port only once
 
 	// Pass the in list to both threads that will be using it
 	Receiver_init(in);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 	// in which case main thread will cancel and join all threads
 	// free all memory not freed, clear the lists, destroy all
 	// condition variables and mutexes, and finally return 0
-	Boss_exitSignal();
+	Manager_exit();
 
 	return 0;
 }

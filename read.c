@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include "boss.h"
+#include "manager.h"
 #include "list.h"
 #include "receive.h"
 #include "read.h"
@@ -19,11 +19,11 @@ void* readToScreen(void* unused){
 		fputs(message, stdout);
 		fflush(stdout);
 		if (*(message) == '!' && *(message + 2) == '\0') { // If receives a single '!' exits gracefully
-			Boss_shutdown(); // receive.c will take care of freeing the message
+			Manager_shutdown(); // receive.c will take care of freeing the message
 		}
 		else {
 			free(message);
-			Boss_removeNode(in_list);
+			Manager_remove(in_list);
 		}
 	}
 }

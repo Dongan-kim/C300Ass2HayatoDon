@@ -13,12 +13,12 @@
 #include "write.h"
 #include "read.h"
 
-void Boss_addLocalPort(int x);
+void Manager_add_port(int x);
 int Manager_Getsocket();
 int Manager_append(List* list, void* item);
 void Manager_wait(void);
 void Manager_remove(List* list);
 void Manager_shutdown(void);
-void Boss_exitSignal(void);
+void Manager_exit(void);
 
 #endif

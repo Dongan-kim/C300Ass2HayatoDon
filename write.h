@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
-#include "boss.h"
+#include "manager.h"
 #include "write.h"
 #include "list.h"
 
