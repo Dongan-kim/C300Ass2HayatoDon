@@ -29,16 +29,8 @@ void* Receiver(void* unused) {
 		buffer[terminater] = '\0';
 		int receiveLength = strlen(buffer);
 
-		// The idea here is once we've received a message it goes into a buffer
-		// Then memory is allocated according to this size of the received message
-		// and s-talk attempts to add it to the in_list, for the screen to display the message
-		// but if all nodes in the pool of static nodes are being used (unlikely if pool has 
-		// number greater than 1) then the receive thread frees the memory and waits for a free node
-		// in the pool. When a free node is available again it allocates memory again and tries to
-		// append the message again. This prevents there being any memory leaks, say, for instance,
-		// if the receive thread is waiting for a free node when the shutdown is called
 		while(1) {
-			char* msg_Rx = (char*)malloc(receiveLength); // Needs +1 because strlen doesn't could EOF
+			char* msg_Rx = (char*)malloc(receiveLength);
 			strcpy(msg_Rx, buffer);
 
 			if (Manager_append(list_for_in, msg_Rx) == -1) {
@@ -58,6 +50,11 @@ void* Receiver(void* unused) {
 	return NULL;
 }
 
+void Receiver_init(List* list) {
+	list_for_in = list;
+	pthread_create(&receive_thread, NULL, Receiver, NULL);
+}
+
 void Receiver_signal(void){
 	pthread_mutex_lock(&mutex_in); 
 	{
@@ -70,11 +67,6 @@ void Receiver_free(void* msg) {
 	if (msg) {
 		free(msg);
 	}
-}
-
-void Receiver_init(List* list) {
-	list_for_in = list;
-	pthread_create(&receive_thread, NULL, Receiver, NULL);
 }
 
 void Receiver_shutdown(void) {

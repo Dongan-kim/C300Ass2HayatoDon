@@ -14,9 +14,9 @@
 #include "receive.h"
 
 void* Receiver(void* unused);
+void Receiver_init(List* list);
 void Receiver_signal(void);
 void Receiver_free(void* msg);
-void Receiver_init(List* list);
 void Receiver_shutdown(void);
 
 #endif
