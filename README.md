@@ -12,7 +12,7 @@ Dongan Kim, Hayato Koyama(301423217)
 
 - Firewall Settings:
 
-Ensure that the firewall on both machines allows incoming and outgoing UDP traffic on the specified ports (6060 and 6001). Check the firewall settings on both machines and make sure that the rules allow communication on these ports.
+Ensure that the firewall on both machines allows incoming and outgoing UDP traffic on the specified ports. Check the firewall settings on both machines and make sure that the rules allow communication on these ports.
 
 - IP Address and Port Configuration:
 
@@ -42,6 +42,7 @@ If there are routers or other network devices between the two machines, check th
 
 As a troubleshooting step, you can temporarily disable the firewall on both machines to see if it resolves the issue. If it does, then you know that the firewall settings need adjustment.
 
+ ##### trouble shooting links:
 https://stackoverflow.com/questions/13905724/udp-message-blocked-by-firewall-despite-port-exception
 
 https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/windows-fireware-rule-block-udp-communication
