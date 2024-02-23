@@ -2,7 +2,7 @@
 
 SFU CMPT 300 Spring 2023 Assignment 2
 
-Dongan Kim, Hayato Koyama(301423217)
+Dongan Kim(301441678), Hayato Koyama(301423217)
 
 ## The possible errors we have in the program:
 
