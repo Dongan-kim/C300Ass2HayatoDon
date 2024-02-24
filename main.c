@@ -23,32 +23,24 @@ int main(int argc, char *argv[])
 	if (argc != 4)
 	{
 		printf("Incorrect arguments: check: ./s-talk (user listening port) (remote ip address) (remote port)\n");
-		return 1;
+		return -1;
 	}
 	printf("Welcome to s-talk\nStart typing to chat\nType '!' to exit program\n\n");
 
 	local_port = atoi(argv[1]);
 
 	struct addrinfo *remoteAddress;
-	struct addrinfo *current;
+	// struct addrinfo *current;
 
 	int addr_check;
 	struct addrinfo hint;
 	memset(&hint, 0, sizeof(struct addrinfo));
-	// これ多分いらない下。
-	//  hint.ai_flags = 0;
-	//  hint.ai_family = AF_INET;
-	//  hint.ai_socktype = SOCK_DGRAM;
-	//  hint.ai_protocol = 0;
-	//  hint.ai_addrlen = 0;
-	//  hint.ai_canonname = NULL;
-	//  hint.ai_addr = NULL;
-	//  hint.ai_next = NULL;
+
 	addr_check = getaddrinfo(argv[2], argv[3], &hint, &remoteAddress);
 	if (addr_check != 0)
 	{
 		printf("Remote ip address you input is invalid\nExiting program\n");
-		return 2;
+		return -1;
 	}
 
 	// list for receiving
@@ -59,18 +51,18 @@ int main(int argc, char *argv[])
 	if (in == NULL || out == NULL)
 	{
 		printf("main.c: Error detected, assigning in/out list Failed\nExiting program\n");
-		return 3;
+		return -1;
 	}
 
 	Manager_add_port(local_port); // Add locla port
 
-	// Pass the in list to threads that want to use them
-	Receiver_init(in);
-	Reader_init(in);
-
 	// Pass the out list to threads that want to use them
 	Writer_init(out);
 	Sender_init(out, &remoteAddress);
+
+	// Pass the in list to threads that want to use them
+	Receiver_init(in);
+	Reader_init(in);
 
 	// will be called when exiting the program.
 	Manager_exit();
